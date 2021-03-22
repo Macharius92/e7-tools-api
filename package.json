@@ -1,0 +1,33 @@
+{
+  "name": "e7-tools-api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "E7ToolsAPI",
+  "main": "server.js",
+  "author": {
+    "name": "Macharius"
+  },
+  "scripts": {
+    "start": "cross-env NODE_ENV=development node server",
+    "startprod": "cross-env NODE_ENV=production node server",
+    "dev": "cross-env NODE_ENV=development nodemon --inspect server"
+  },
+  "dependencies": {
+    "connect-mongo": "^4.4.0",
+    "cors": "^2.8.5",
+    "debug": "^4.3.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "moment": "^2.29.1",
+    "mongoose": "^5.12.0",
+    "morgan": "^1.10.0",
+    "nightmare": "^2.8.0",
+    "passport": "^0.4.1",
+    "passport-discord": "^0.1.4"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.2",
+    "nodemon": "^2.0.7"
+  }
+}
