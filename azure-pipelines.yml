@@ -15,17 +15,19 @@ stages:
     jobs:
       - job: Api
         steps:
+          - checkout: self
+            path: api
           - task: Npm@1
             inputs:
               command: 'ci'
-              workingDir: '$(System.DefaultWorkingDirectory)'
+              workingDir: '$(System.DefaultWorkingDirectory)/api'
           - task: Bash@3
             inputs:
               targetType: 'inline'
               script: |
                 rm -f .gitignore
                 rm -f README.md
-              workingDirectory: '$(System.DefaultWorkingDirectory)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/api'
           - task: PublishPipelineArtifact@1
             inputs:
               targetPath: '$(Pipeline.Workspace)/api'
