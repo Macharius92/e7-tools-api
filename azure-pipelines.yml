@@ -63,10 +63,12 @@ stages:
                       targetType: 'inline'
                       script: |
                         cp -Force -Path "${env:DESTFOLDER}/api/config/config.env.template" -Destination "${env:DESTFOLDER}/api/config/config.env"
-                        (Get-Content "${env:DESTFOLDER}/api/config/config.env" -Raw) -replace '(PORT=).*',"`$11337" | Set-Content "${env:DESTFOLDER}/api/config/config.env"
-                        (Get-Content "${env:DESTFOLDER}/api/config/config.env" -Raw) -replace '(MONGO_URI=).*',"`$1$(mongoUri)" | Set-Content "${env:DESTFOLDER}/api/config/config.env"
-                        (Get-Content "${env:DESTFOLDER}/api/config/config.env" -Raw) -replace '(SESSION_SECRET=).*',"`$1$(sessSecret)" | Set-Content "${env:DESTFOLDER}/api/config/config.env"
-                        (Get-Content "${env:DESTFOLDER}/api/config/config.env" -Raw) -replace '(DISCORD_CLIENT_ID=).*',"`$1$(discClientId)" | Set-Content "${env:DESTFOLDER}/api/config/config.env"
-                        (Get-Content "${env:DESTFOLDER}/api/config/config.env" -Raw) -replace '(DISCORD_CLIENT_SECRET=).*',"`$1$(discClientSecret)" | Set-Content "${env:DESTFOLDER}/api/config/config.env"
+                        $content = Get-Content "${env:DESTFOLDER}/api/config/config.env"
+                        $content = $content -replace '(?<Port>PORT=).*',"`${Port}1337"
+                        $content = $content -replace '(MONGO_URI=).*',"`$1$(mongoUri)"
+                        $content = $content -replace '(SESSION_SECRET=).*',"`$1$(sessSecret)"
+                        $content = $content -replace '(DISCORD_CLIENT_ID=).*',"`$1$(discClientId)"
+                        $content = $content -replace '(DISCORD_CLIENT_SECRET=).*',"`$1$(discClientSecret)"
+                        $content | Set-Content "${env:DESTFOLDER}/api/config/config.env"
                     env:
                       DestFolder: $(DestFolder)
