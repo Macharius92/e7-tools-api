@@ -62,7 +62,7 @@ stages:
                     inputs:
                       targetType: 'inline'
                       script: |
-                        cp -Force -Path ${env:DESTFOLDER}/config/config.env.template -Destination ${env:DESTFOLDER}/config/config.env
+                        cp -Force -Path "${env:DESTFOLDER}/config/config.env.template" -Destination "${env:DESTFOLDER}/config/config.env"
                         (Get-Content "${env:DESTFOLDER}/config/config.env" -Raw) -replace '(PORT=).*',"`$11337" | Set-Content "${env:DESTFOLDER}/config/config.env"
                         (Get-Content "${env:DESTFOLDER}/config/config.env" -Raw) -replace '(MONGO_URI=).*',"`$1$(mongoUri)" | Set-Content "${env:DESTFOLDER}/config/config.env"
                         (Get-Content "${env:DESTFOLDER}/config/config.env" -Raw) -replace '(SESSION_SECRET=).*',"`$1$(sessSecret)" | Set-Content "${env:DESTFOLDER}/config/config.env"
