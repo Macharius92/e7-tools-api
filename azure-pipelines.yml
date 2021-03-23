@@ -54,7 +54,7 @@ stages:
                     displayName: Api Deploy
                     inputs:
                       targetType: 'inline'
-                      script: 'mv -Force -Path $(Pipeline.Workspace)/api -Destination ${env:DESTFOLDER}'
+                      script: 'cp -Force -Recurse -Path $(Pipeline.Workspace)/api -Destination ${env:DESTFOLDER}'
                     env:
                       DestFolder: $(DestFolder)
                   - task: PowerShell@2
@@ -68,3 +68,5 @@ stages:
                         (Get-Content "${env:DESTFOLDER}/config/config.env" -Raw) -replace '(SESSION_SECRET=).*',"`$1$(sessSecret)" | Set-Content "${env:DESTFOLDER}/config/config.env"
                         (Get-Content "${env:DESTFOLDER}/config/config.env" -Raw) -replace '(DISCORD_CLIENT_ID=).*',"`$1$(discClientId)" | Set-Content "${env:DESTFOLDER}/config/config.env"
                         (Get-Content "${env:DESTFOLDER}/config/config.env" -Raw) -replace '(DISCORD_CLIENT_SECRET=).*',"`$1$(discClientSecret)" | Set-Content "${env:DESTFOLDER}/config/config.env"
+                    env:
+                      DestFolder: $(DestFolder)
