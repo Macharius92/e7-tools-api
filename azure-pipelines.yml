@@ -1,0 +1,57 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+# Inspired with the help of https://technology.amis.nl/continuous-delivery/deploy-angular-and-node-js-webapp-in-azure-pipelines-part-5/
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Api
+        steps:
+          - task: Npm@1
+            inputs:
+              command: 'ci'
+              workingDir: '$(System.DefaultWorkingDirectory)'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                rm -f .gitignore
+                rm -f README.md
+              workingDirectory: '$(System.DefaultWorkingDirectory)'
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Pipeline.Workspace)'
+              artifact: 'api'
+              publishLocation: 'pipeline'
+  - stage: deployProduction
+    displayName: Deploy Production
+    dependsOn:
+    - Build
+    jobs:
+      - deployment: VMDeploy_Production
+        displayName: deploy Production
+        environment:
+          name: Prod
+          resourceType: VirtualMachine
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                  - download: current
+                    displayName: Download API
+                    artifact: 'api'
+                  - task: PowerShell@2
+                    displayName: Api Deploy
+                    inputs:
+                      targetType: 'inline'
+                      script: 'mv -Path $(Pipeline.Workspace)/api -Destination ${env:DESTFOLDER}'
+                    env:
+                      DestFolder: $(DestFolder)
