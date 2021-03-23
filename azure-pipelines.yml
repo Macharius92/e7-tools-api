@@ -28,7 +28,7 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)'
           - task: PublishPipelineArtifact@1
             inputs:
-              targetPath: '$(Pipeline.Workspace)'
+              targetPath: '$(Pipeline.Workspace)/api'
               artifact: 'api'
               publishLocation: 'pipeline'
   - stage: deployProduction
