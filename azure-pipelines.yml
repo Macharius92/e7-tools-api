@@ -65,10 +65,10 @@ stages:
                         cp -Force -Path "${env:DESTFOLDER}/api/config/config.env.template" -Destination "${env:DESTFOLDER}/api/config/config.env"
                         $content = Get-Content "${env:DESTFOLDER}/api/config/config.env"
                         $content = $content -replace '(?<Port>PORT=).*',"`${Port}1337"
-                        $content = $content -replace '(MONGO_URI=).*',"`$1$(mongoUri)"
-                        $content = $content -replace '(SESSION_SECRET=).*',"`$1$(sessSecret)"
-                        $content = $content -replace '(DISCORD_CLIENT_ID=).*',"`$1$(discClientId)"
-                        $content = $content -replace '(DISCORD_CLIENT_SECRET=).*',"`$1$(discClientSecret)"
+                        $content = $content -replace '(?<Mongo>MONGO_URI=).*',"`${Mongo}$(mongoUri)"
+                        $content = $content -replace '(?<SessSecret>SESSION_SECRET=).*',"`${SessSecret}$(sessSecret)"
+                        $content = $content -replace '(?<DiscCliId>DISCORD_CLIENT_ID=).*',"`${DiscCliId}$(discClientId)"
+                        $content = $content -replace '(?<DiscCliSecret>DISCORD_CLIENT_SECRET=).*',"`${DiscCliSecret}$(discClientSecret)"
                         $content | Set-Content "${env:DESTFOLDER}/api/config/config.env"
                     env:
                       DestFolder: $(DestFolder)
