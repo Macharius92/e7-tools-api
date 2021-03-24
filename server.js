@@ -1,17 +1,16 @@
+const dotenv = require('dotenv');
+// Load config
+dotenv.config({ path: './config/config.env' });
 const debug = require('debug')('E7ToolsAPI');
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const morgan = require('morgan');
 const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const connectDB = require('./config/db');
 const cors = require ('cors');
-
-// Load config
-dotenv.config({ path: './config/config.env' });
 
 // Passport config
 require('./config/passport')(passport);
@@ -59,10 +58,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth'));
 app.use('/characters', require('./routes/characters'));
+app.use('/artifacts', require('./routes/artifacts'));
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(
-    PORT,
-    debug(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+    PORT, () => {
+        debug(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    }
 );
