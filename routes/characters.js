@@ -6,6 +6,7 @@ const CachedData = require('../models/CachedData');
 const Hero = require('../models/Hero');
 const { scrapHeroes } = require('../services/scrap7x');
 const moment = require('moment');
+const {decode} = require('html-entities');
 
 router.get('/',
     ensureGuest,
@@ -24,7 +25,7 @@ router.get('/',
                     icon: hero.icon,
                     link: hero.link
                 };
-                await Hero.findOneAndUpdate({ name: hero.name}, newHero, {new: true, upsert: true});
+                await Hero.findOneAndUpdate({ name: decode(hero.name)}, newHero, {new: true, upsert: true});
             });
             await CachedData.findOneAndUpdate({ id: 1 }, { hero: new Date() }, { new: true, upsert: true });
         }

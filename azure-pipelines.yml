@@ -54,7 +54,9 @@ stages:
                     displayName: Api Deploy
                     inputs:
                       targetType: 'inline'
-                      script: 'cp -Force -Recurse -Path $(Pipeline.Workspace)/api -Destination ${env:DESTFOLDER}'
+                      script: |
+                        pm2 stop api
+                        cp -Force -Recurse -Path $(Pipeline.Workspace)/api -Destination ${env:DESTFOLDER}
                     env:
                       DestFolder: $(DestFolder)
                   - task: PowerShell@2
@@ -70,5 +72,6 @@ stages:
                         $content = $content -replace '(?<DiscCliId>DISCORD_CLIENT_ID=).*',"`${DiscCliId}$(discClientId)"
                         $content = $content -replace '(?<DiscCliSecret>DISCORD_CLIENT_SECRET=).*',"`${DiscCliSecret}$(discClientSecret)"
                         $content | Set-Content "${env:DESTFOLDER}/api/config/config.env"
+                        pm2 start api
                     env:
                       DestFolder: $(DestFolder)
