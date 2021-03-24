@@ -7,6 +7,7 @@ const CachedData = require('../models/CachedData');
 const Artifact = require('../models/Artifact');
 const { scrapArtifacts } = require('../services/scrap7x');
 const moment = require('moment');
+const { decode } = require('html-entities');
 
 router.get('/',
     ensureGuest,
@@ -26,7 +27,7 @@ router.get('/',
                     image: artifact.image,
                     link: artifact.link
                 };
-                await Artifact.findOneAndUpdate({ name: artifact.name }, newArtifact, { new: true, upsert: true });
+                await Artifact.findOneAndUpdate({ name: decode(artifact.name) }, newArtifact, { new: true, upsert: true });
                 debug(`Traitment ${artifact.name}`);
             });
             await CachedData.findOneAndUpdate({ id: 1 }, { artifact: new Date() }, { new: true, upsert: true });

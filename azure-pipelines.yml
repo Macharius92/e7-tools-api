@@ -7,8 +7,8 @@
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+pool: Default
+  #vmImage: ubuntu-latest
 
 stages:
   - stage: Build
@@ -17,18 +17,27 @@ stages:
         steps:
           - checkout: self
             path: api
+          - task: NodeTool@0
+            displayName: Ensure Node 15
+            inputs:
+              versionSpec: '15.x' 
+              #force32bit: false # Optional
+              checkLatest: true # Optional
           - task: Npm@1
+            displayName: NPM CI
             inputs:
               command: 'ci'
               workingDir: '$(Pipeline.Workspace)/api'
-          - task: Bash@3
+          - task: PowerShell@2
+            displayName: Remove extra files
             inputs:
               targetType: 'inline'
               script: |
-                rm -f .gitignore
-                rm -f README.md
+                rm -Force .gitignore
+                rm -Force README.md
               workingDirectory: '$(Pipeline.Workspace)/api'
           - task: PublishPipelineArtifact@1
+            displayName: Publish Artifact in Pipeline
             inputs:
               targetPath: '$(Pipeline.Workspace)/api'
               artifact: 'api'
