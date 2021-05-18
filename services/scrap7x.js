@@ -1,10 +1,12 @@
 'use strict';
 const debug = require('debug')('E7ToolsAPI');
 const Nightmare = require('nightmare');
+const browserHeroes = new Nightmare();
+const browserArtifacts = new Nightmare();
 
 const scrapHeroes = async () => {
     debug("Start scraping characters");
-    return new Nightmare()
+    return browserHeroes
         .viewport(1600, 1200)
         .goto("https://epic7x.com/characters/")
         .evaluate(function () {
@@ -15,7 +17,7 @@ const scrapHeroes = async () => {
 
 const scrapArtifacts = async () => {
     debug("Start scraping artifacts");
-    return new Nightmare()
+    return browserArtifacts
         .viewport(1600, 1200)
         .goto("https://epic7x.com/artifacts/")
         .evaluate(function () {
