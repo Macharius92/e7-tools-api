@@ -3,6 +3,7 @@ const express = require('express');
 const passport = require('passport');
 const { ensureAuth } = require('../middleware/auth');
 const router = express.Router();
+const BuildDiscordImageUrl = require('../helpers/discord');
 
 // @desc    Auth with Discord
 // @route   GET /auth/discord
@@ -22,8 +23,11 @@ router.get(
 router.get(
     '/session',
     function (req, res) {
-        if (req.isAuthenticated()) res.send(true);
-        else res.send(false);
+        let userAuth = { authenticated: req.isAuthenticated()};
+        if (req.isAuthenticated()) userAuth = { ...userAuth, ...{ userAvatar:BuildDiscordImageUrl(req.user.discordId, req.user.image)}};
+        res.json(userAuth);
+        //if (req.isAuthenticated()) res.send(true);
+        //else res.send(false);
     }
 );
 

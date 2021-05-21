@@ -19,6 +19,9 @@ const UserSchema = new mongoose.Schema({
         type: String
     },
     guilds: { type: [guild.schema] },
+    role: {
+        type: [String]
+    },
     createdAt: {
         type: Date,
         default: Date.now

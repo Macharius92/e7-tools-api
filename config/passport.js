@@ -15,17 +15,15 @@ module.exports = function (passport) {
                 scope: ['identify', 'guilds']
             },
             async (accessToken, refreshToken, profile, done) => {
-                //console.log(profile);
-                let guilds = new Array();
-                profile.guilds.forEach((guild) => {
-                    guilds.push({
+
+                let guilds = profile.guilds.map((guild) => {
+                    return {
                         discordGuildId: guild.id,
                         guildName: guild.name
-                    });
+                    };
                 });
 
                 const newUser = {
-                    //discordId: profile.id,
                     userName: profile.username,
                     discriminator: profile.discriminator,
                     image: profile.avatar,
@@ -39,6 +37,22 @@ module.exports = function (passport) {
                             new: true,
                             upsert: true
                         });
+                    let admins = process.env.ADMIN || "";
+                    let userId = user._id;
+                    // User is in ADMIN list
+                    if (admins.split(';').includes(user.discordId))
+                    {
+                        // User already has roles
+                        if (user.role)
+                        {
+                            // But not yet Admin role
+                            if (!user.role.includes('admin')) user.role.push('admin');
+                        }
+                        // if not we add the Admin role
+                        else user.role = ['admin'];
+                        await user.save();
+                        user = await User.findById(userId);
+                    }
                     done(null, user);
                 } catch (err) {
                     console.error(err);
