@@ -46,4 +46,4 @@ HeroSchema.method('transName', function(lang) {
     return this.name;
 });
 
-module.exports = mongoose.model('Hero', HeroSchema);
+module.exports = mongoose.model('Hero', HeroSchema, 'heroes');
