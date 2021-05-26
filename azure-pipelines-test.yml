@@ -7,9 +7,9 @@
 trigger:
   branches:
     include:
-    - main
-    exclude:
     - develop
+    exclude:
+    - main
 
 pool: Default
   #vmImage: ubuntu-latest
@@ -20,7 +20,7 @@ stages:
       - job: Api
         steps:
           - checkout: self
-            path: api
+            path: apitest
           - task: NodeTool@0
             displayName: Ensure Node 15
             inputs:
@@ -31,7 +31,7 @@ stages:
             displayName: NPM CI
             inputs:
               command: 'ci'
-              workingDir: '$(Pipeline.Workspace)/api'
+              workingDir: '$(Pipeline.Workspace)/apitest'
           - task: PowerShell@2
             displayName: Remove extra files
             inputs:
@@ -39,22 +39,22 @@ stages:
               script: |
                 rm -Force .gitignore
                 rm -Force README.md
-              workingDirectory: '$(Pipeline.Workspace)/api'
+              workingDirectory: '$(Pipeline.Workspace)/apitest'
           - task: PublishPipelineArtifact@1
             displayName: Publish Artifact in Pipeline
             inputs:
-              targetPath: '$(Pipeline.Workspace)/api'
-              artifact: 'api'
+              targetPath: '$(Pipeline.Workspace)/apitest'
+              artifact: 'apitest'
               publishLocation: 'pipeline'
-  - stage: deployProduction
-    displayName: Deploy Production
+  - stage: deployTest
+    displayName: Deploy Test
     dependsOn:
     - Build
     jobs:
       - deployment: VMDeploy_Production
-        displayName: deploy Production
+        displayName: deploy Test
         environment:
-          name: Prod
+          name: Test
           resourceType: VirtualMachine
         strategy:
           runOnce:
@@ -62,14 +62,14 @@ stages:
               steps:
                   - download: current
                     displayName: Download API
-                    artifact: 'api'
+                    artifact: 'apitest'
                   - task: PowerShell@2
                     displayName: Api Deploy
                     inputs:
                       targetType: 'inline'
                       script: |
-                        pm2 stop api
-                        cp -Force -Recurse -Path $(Pipeline.Workspace)/api -Destination ${env:DESTFOLDER}
+                        pm2 stop apitest
+                        cp -Force -Recurse -Path $(Pipeline.Workspace)/apitest -Destination ${env:DESTFOLDER}
                     env:
                       DestFolder: $(DestFolder)
                   - task: PowerShell@2
@@ -77,17 +77,15 @@ stages:
                     inputs:
                       targetType: 'inline'
                       script: |
-                        cp -Force -Path "${env:DESTFOLDER}/api/config/config.env.template" -Destination "${env:DESTFOLDER}/api/config/config.env"
-                        $content = Get-Content "${env:DESTFOLDER}/api/config/config.env"
-                        $content = $content -replace '(?<NodeEnv>NODE_ENV=).*',"`${NodeEnv}$(nodeEnv)"
+                        cp -Force -Path "${env:DESTFOLDER}/apitest/config/config.env.template" -Destination "${env:DESTFOLDER}/apitest/config/config.env"
+                        $content = Get-Content "${env:DESTFOLDER}/apitest/config/config.env"
                         $content = $content -replace '(?<Port>PORT=).*',"`${Port}$(portApi)"
                         $content = $content -replace '(?<Mongo>MONGO_URI=).*',"`${Mongo}$(mongoUri)"
                         $content = $content -replace '(?<SessSecret>SESSION_SECRET=).*',"`${SessSecret}$(sessSecret)"
                         $content = $content -replace '(?<DiscCliId>DISCORD_CLIENT_ID=).*',"`${DiscCliId}$(discClientId)"
                         $content = $content -replace '(?<DiscCliSecret>DISCORD_CLIENT_SECRET=).*',"`${DiscCliSecret}$(discClientSecret)"
-                        $content = $content -replace '(?<ClientURL>CLIENT_APP_URL=).*',"`${ClientURL}$(clientURL)"
                         $content = $content -replace '(?<AdminApp>ADMIN=).*',"`${AdminApp}$(adminApp)"
-                        $content | Set-Content "${env:DESTFOLDER}/api/config/config.env"
-                        pm2 start api
+                        $content | Set-Content "${env:DESTFOLDER}/apitest/config/config.env"
+                        pm2 start apitest
                     env:
                       DestFolder: $(DestFolder)
