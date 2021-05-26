@@ -1,0 +1,91 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+# Inspired with the help of https://technology.amis.nl/continuous-delivery/deploy-angular-and-node-js-webapp-in-azure-pipelines-part-5/
+
+trigger:
+  branches:
+    include:
+    - develop
+    exclude:
+    - main
+
+pool: Default
+  #vmImage: ubuntu-latest
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Api
+        steps:
+          - checkout: self
+            path: apitest
+          - task: NodeTool@0
+            displayName: Ensure Node 15
+            inputs:
+              versionSpec: '15.x' 
+              #force32bit: false # Optional
+              checkLatest: true # Optional
+          - task: Npm@1
+            displayName: NPM CI
+            inputs:
+              command: 'ci'
+              workingDir: '$(Pipeline.Workspace)/apitest'
+          - task: PowerShell@2
+            displayName: Remove extra files
+            inputs:
+              targetType: 'inline'
+              script: |
+                rm -Force .gitignore
+                rm -Force README.md
+              workingDirectory: '$(Pipeline.Workspace)/apitest'
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Artifact in Pipeline
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/apitest'
+              artifact: 'apitest'
+              publishLocation: 'pipeline'
+  - stage: deployTest
+    displayName: Deploy Test
+    dependsOn:
+    - Build
+    jobs:
+      - deployment: VMDeploy_Production
+        displayName: deploy Test
+        environment:
+          name: Test
+          resourceType: VirtualMachine
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                  - download: current
+                    displayName: Download API
+                    artifact: 'apitest'
+                  - task: PowerShell@2
+                    displayName: Api Deploy
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        pm2 stop apitest
+                        cp -Force -Recurse -Path $(Pipeline.Workspace)/apitest -Destination ${env:DESTFOLDER}
+                    env:
+                      DestFolder: $(DestFolder)
+                  - task: PowerShell@2
+                    displayName: Env Deploy
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        cp -Force -Path "${env:DESTFOLDER}/apitest/config/config.env.template" -Destination "${env:DESTFOLDER}/apitest/config/config.env"
+                        $content = Get-Content "${env:DESTFOLDER}/apitest/config/config.env"
+                        $content = $content -replace '(?<Port>PORT=).*',"`${Port}$(portApi)"
+                        $content = $content -replace '(?<Mongo>MONGO_URI=).*',"`${Mongo}$(mongoUri)"
+                        $content = $content -replace '(?<SessSecret>SESSION_SECRET=).*',"`${SessSecret}$(sessSecret)"
+                        $content = $content -replace '(?<DiscCliId>DISCORD_CLIENT_ID=).*',"`${DiscCliId}$(discClientId)"
+                        $content = $content -replace '(?<DiscCliSecret>DISCORD_CLIENT_SECRET=).*',"`${DiscCliSecret}$(discClientSecret)"
+                        $content = $content -replace '(?<AdminApp>ADMIN=).*',"`${AdminApp}$(adminApp)"
+                        $content | Set-Content "${env:DESTFOLDER}/apitest/config/config.env"
+                        pm2 start apitest
+                    env:
+                      DestFolder: $(DestFolder)
