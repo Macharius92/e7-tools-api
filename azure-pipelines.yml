@@ -5,7 +5,11 @@
 # Inspired with the help of https://technology.amis.nl/continuous-delivery/deploy-angular-and-node-js-webapp-in-azure-pipelines-part-5/
 
 trigger:
-- main
+  branches:
+    include:
+    - main
+    exclude:
+    - develop
 
 pool: Default
   #vmImage: ubuntu-latest
@@ -75,11 +79,14 @@ stages:
                       script: |
                         cp -Force -Path "${env:DESTFOLDER}/api/config/config.env.template" -Destination "${env:DESTFOLDER}/api/config/config.env"
                         $content = Get-Content "${env:DESTFOLDER}/api/config/config.env"
-                        $content = $content -replace '(?<Port>PORT=).*',"`${Port}1337"
+                        $content = $content -replace '(?<NodeEnv>NODE_ENV=).*',"`${NodeEnv}$(nodeEnv)"
+                        $content = $content -replace '(?<Port>PORT=).*',"`${Port}$(portApi)"
                         $content = $content -replace '(?<Mongo>MONGO_URI=).*',"`${Mongo}$(mongoUri)"
                         $content = $content -replace '(?<SessSecret>SESSION_SECRET=).*',"`${SessSecret}$(sessSecret)"
                         $content = $content -replace '(?<DiscCliId>DISCORD_CLIENT_ID=).*',"`${DiscCliId}$(discClientId)"
                         $content = $content -replace '(?<DiscCliSecret>DISCORD_CLIENT_SECRET=).*',"`${DiscCliSecret}$(discClientSecret)"
+                        $content = $content -replace '(?<ClientURL>CLIENT_APP_URL=).*',"`${ClientURL}$(clientURL)"
+                        $content = $content -replace '(?<AdminApp>ADMIN=).*',"`${AdminApp}$(adminApp)"
                         $content | Set-Content "${env:DESTFOLDER}/api/config/config.env"
                         pm2 start api
                     env:
