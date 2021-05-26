@@ -92,7 +92,6 @@ router.put('/:lang/:id', ensureAuth,
             let indexTranslation = hero.i18n.findIndex(trans => trans.lang === req.params.lang);
             if (indexTranslation >= 0) hero.i18n[indexTranslation].label = translatedName;
             else {
-                //hero = {...hero, i18n:[...hero.i18n, [{lang:req.params.lang, label: translatedName}]]};
                 return res.status(400).json({errorMessage: `You can't update an unexisting translation for this hero`, data:hero});
             }
             await hero.save();
